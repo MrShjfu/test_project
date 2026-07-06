@@ -1,0 +1,10 @@
+{
+  "name": "core",
+  "projectType": "library",
+  "sourceRoot": "libs/api/Helm.Core",
+  "targets": {
+    "build": { "executor": "nx:run-commands", "options": { "command": "dotnet build libs/api/Helm.Core/Helm.Core.csproj" } },
+    "test":  { "executor": "nx:run-commands", "options": { "command": "dotnet test libs/api/Helm.Core.Tests/Helm.Core.Tests.csproj" } }
+  },
+  "implicitDependencies": []
+}

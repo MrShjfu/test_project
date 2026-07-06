@@ -7,5 +7,5 @@
     "test":  { "executor": "nx:run-commands", "options": { "command": "echo no tests" } },
     "serve": { "executor": "nx:run-commands", "options": { "command": "dotnet run --project apps/api/Helm.Host/Helm.Host.csproj" } }
   },
-  "implicitDependencies": []
+  "implicitDependencies": ["core"]
 }
