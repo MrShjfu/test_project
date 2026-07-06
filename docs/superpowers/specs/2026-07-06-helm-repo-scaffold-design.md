@@ -137,6 +137,6 @@ CRM owns one aggregate: `Customer(id, company_id, name, email)`. CPQ owns only t
 
 ## Open technical points recorded during design
 
-1. nx-dotnet × .NET 10 spike result → update this spec + note on ADR-009.
+1. nx-dotnet × .NET 10 spike result → update this spec + note on ADR-009. **Resolved 2026-07-06**: `@nx-dotnet/core@3.0.2` (latest published) declares peer dependency `nx >= 20.0.0 < 23.0.0`, conflicting with the workspace's `nx@23.0.1`; forcing the install with `--legacy-peer-deps` let `nx g @nx-dotnet/core:app` run but it left the project graph broken (generated `apps/api/Helm.Host/Api.Helm.Host.csproj` only in a temp directory, wired dangling references to the never-created workspace path, and `nx show projects`/`nx build` failed workspace-wide with ENOENT) — so the plugin was removed and Task 2 lands the **project.json + `nx:run-commands` fallback** instead; `npx nx build api` now runs `dotnet build` successfully.
 2. Per-BFF OpenAPI decision (made here) should be reflected back into overview §3 / ADR-009 wording on "the" generated client.
 3. The 3-frontend split remains a working assumption pending product discovery (overview §1) — skeleton keeps all three deliberately thin.
