@@ -16,7 +16,9 @@ public static class OutboxWriter
     {
         var message = new OutboxMessage
         {
-            Id = Guid.NewGuid(),
+            // outbox row id IS the domain event id — one row per event; stable across relay retries
+            // (ADR-004: processed_events.event_id keys on the event)
+            Id = evt.EventId,
             EventType = evt.GetType().Name,
             Payload = JsonSerializer.Serialize(evt, evt.GetType()),
             CreatedAt = DateTimeOffset.UtcNow,

@@ -55,14 +55,14 @@ public class OutboxRelay<TContext>(
         // constant. FromSqlRaw/ExecuteSqlRaw are acceptable for a module's own schema per rule 1 — the
         // interpolated {schema} segment names a trusted identifier, not a value, so SqlQuery's
         // parameterization (which targets values, not identifiers) wouldn't apply here anyway.
-        // Column names are quoted PascalCase ("Id", "EventType", ...): EF's default Npgsql
-        // convention maps C# property names verbatim rather than folding to snake_case, so the
-        // real columns are case-sensitive as created by OutboxModelBuilder.
+        // Column names are unquoted snake_case (id, event_type, payload, ...) per ADR-004 DDL, as
+        // mapped explicitly by OutboxModelBuilder — aliased below so SqlQueryRaw's result-to-property
+        // matching (which goes by CLR property name) lines up with OutboxRow's PascalCase members.
 #pragma warning disable EF1002
         var rows = await db.Database.SqlQueryRaw<OutboxRow>(
                 $"""
-                 SELECT "Id", "EventType", "Payload" FROM {schema}.outbox
-                 WHERE "ProcessedAt" IS NULL ORDER BY "CreatedAt"
+                 SELECT id AS "Id", event_type AS "EventType", payload AS "Payload" FROM {schema}.outbox
+                 WHERE processed_at IS NULL ORDER BY created_at
                  FOR UPDATE SKIP LOCKED LIMIT {BatchSize}
                  """)
             .ToListAsync(ct);
@@ -75,7 +75,7 @@ public class OutboxRelay<TContext>(
 
 #pragma warning disable EF1002 // {schema} is a trusted identifier (this context's own model), not a value
             await db.Database.ExecuteSqlRawAsync(
-                $"""UPDATE {schema}.outbox SET "ProcessedAt" = now() WHERE "Id" = @id""",
+                $"""UPDATE {schema}.outbox SET processed_at = now() WHERE id = @id""",
                 [new Npgsql.NpgsqlParameter("id", row.Id)], ct);
 #pragma warning restore EF1002
         }

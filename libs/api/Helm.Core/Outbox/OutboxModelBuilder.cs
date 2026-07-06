@@ -15,14 +15,19 @@ public static class OutboxModelBuilder
         {
             e.ToTable("outbox");
             e.HasKey(m => m.Id);
-            e.Property(m => m.EventType).IsRequired();
-            e.Property(m => m.Payload).IsRequired();
+            e.Property(m => m.Id).HasColumnName("id");
+            e.Property(m => m.EventType).HasColumnName("event_type").IsRequired();
+            e.Property(m => m.Payload).HasColumnName("payload").HasColumnType("jsonb").IsRequired();
+            e.Property(m => m.CreatedAt).HasColumnName("created_at");
+            e.Property(m => m.ProcessedAt).HasColumnName("processed_at");
         });
 
         b.Entity<ProcessedEvent>(e =>
         {
             e.ToTable("processed_events");
             e.HasKey(p => p.EventId);
+            e.Property(p => p.EventId).HasColumnName("event_id");
+            e.Property(p => p.ProcessedAt).HasColumnName("processed_at");
         });
     }
 }

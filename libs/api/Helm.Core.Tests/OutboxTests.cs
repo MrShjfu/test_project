@@ -52,6 +52,21 @@ public class OutboxTests(PostgresFixture pg)
         Task.FromResult(pg.CreateDbContext<OutboxTestDb>(o => new OutboxTestDb(o)));
 
     [Fact]
+    public async Task Outbox_table_uses_snake_case_columns_per_adr004()
+    {
+        await using var db = await CleanDbAsync();
+
+        var columns = await db.Database.SqlQueryRaw<string>(
+                """
+                SELECT column_name FROM information_schema.columns
+                WHERE table_schema = 'outbox_test' AND table_name = 'outbox'
+                """)
+            .ToListAsync();
+
+        columns.Should().BeEquivalentTo(["id", "event_type", "payload", "created_at", "processed_at"]);
+    }
+
+    [Fact]
     public async Task Rollback_leaves_no_outbox_row()
     {
         await using var db = await CleanDbAsync();
