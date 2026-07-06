@@ -3,22 +3,4 @@ docs/adr/
 docs/architecture/
 .superpowers/
 
-# .NET
-bin/
-obj/
-*.user
-# Node
-node_modules/
-dist/
-.nx/cache
-.nx/workspace-data
-coverage/
-# Env & tools
-.env
-*.local
-.vscode/
-.idea/
-# Test artifacts
-TestResults/
-playwright-report/
-test-results/
+docs/README.md
