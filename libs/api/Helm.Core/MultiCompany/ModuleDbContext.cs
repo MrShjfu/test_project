@@ -4,11 +4,18 @@ using Microsoft.Extensions.Logging;
 
 namespace Helm.Core.MultiCompany;
 
-public abstract class ModuleDbContext<TSelf>(
-    DbContextOptions<TSelf> options, ICompanyContext company, ILogger<TSelf> logger)
-    : DbContext(options) where TSelf : DbContext
+public abstract class ModuleDbContext<TSelf> : DbContext where TSelf : DbContext
 {
-    protected ICompanyContext Company { get; } = company;
+    protected ICompanyContext Company { get; }
+
+    protected ModuleDbContext(DbContextOptions<TSelf> options, ICompanyContext company, ILogger<TSelf> logger)
+        : base(options)
+    {
+        Company = company;
+        // Fires once per context INSTANCE (unlike OnModelCreating, which EF runs once per
+        // context TYPE due to model caching — logging there would miss most admin sessions).
+        if (Company.IsGroupAdmin) CrossCompanyAuditLogger.LogBypass(logger, Company.CompanyId);
+    }
 
     protected override void OnModelCreating(ModelBuilder b)
     {
@@ -24,7 +31,6 @@ public abstract class ModuleDbContext<TSelf>(
             et.SetQueryFilter(Expression.Lambda(body, p));
             et.GetProperty(nameof(CompanyOwnedEntity.CompanyId)).SetMaxLength(64);
         }
-        if (Company.IsGroupAdmin) CrossCompanyAuditLogger.LogBypass(logger, Company.CompanyId);
     }
 
     public string CurrentCompanyId => Company.CompanyId;
@@ -33,7 +39,12 @@ public abstract class ModuleDbContext<TSelf>(
     private void StampCompanyId()
     {
         foreach (var e in ChangeTracker.Entries<CompanyOwnedEntity>().Where(e => e.State == EntityState.Added))
+        {
             e.Entity.CompanyId ??= Company.CompanyId;
+            if (e.Entity.CompanyId != Company.CompanyId && !Company.IsGroupAdmin)
+                throw new InvalidOperationException(
+                    $"Cross-company write denied: entity CompanyId '{e.Entity.CompanyId}' does not match context company '{Company.CompanyId}'.");
+        }
     }
 
     public override Task<int> SaveChangesAsync(CancellationToken ct = default)
