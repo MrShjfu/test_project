@@ -9,9 +9,11 @@ public sealed class PostgresFixture : IAsyncLifetime
     public Task InitializeAsync() => _container.StartAsync();
     public Task DisposeAsync() => _container.DisposeAsync().AsTask();
 
-    public TContext CreateDbContext<TContext>(Func<DbContextOptions<TContext>, TContext> factory)
+    public TContext CreateDbContext<TContext>(
+        Func<DbContextOptions<TContext>, TContext> factory,
+        Action<Npgsql.EntityFrameworkCore.PostgreSQL.Infrastructure.NpgsqlDbContextOptionsBuilder>? npgsql = null)
         where TContext : DbContext =>
-        factory(new DbContextOptionsBuilder<TContext>().UseNpgsql(ConnectionString).Options);
+        factory(new DbContextOptionsBuilder<TContext>().UseNpgsql(ConnectionString, npgsql).Options);
 }
 
 [CollectionDefinition("postgres")]
