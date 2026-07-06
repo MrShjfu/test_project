@@ -1,0 +1,14 @@
+{
+  "name": "helm",
+  "version": "0.0.0",
+  "private": true,
+  "description": "NTG Platform (Helm) - unified sailmaking platform monorepo",
+  "devDependencies": {
+    "@nx/eslint": "^23.0.1",
+    "@nx/js": "^23.0.1",
+    "@nx/playwright": "^23.0.1",
+    "@nx/react": "^23.0.1",
+    "@nx/vite": "^23.0.1",
+    "nx": "^23.0.1"
+  }
+}
