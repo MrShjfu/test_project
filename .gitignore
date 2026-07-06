@@ -4,3 +4,19 @@ docs/architecture/
 .superpowers/
 
 docs/README.md
+# Build artifacts (restored from Task 0)
+bin/
+obj/
+*.user
+node_modules/
+dist/
+.nx/cache
+.nx/workspace-data
+coverage/
+.env
+*.local
+.vscode/
+.idea/
+TestResults/
+playwright-report/
+test-results/
