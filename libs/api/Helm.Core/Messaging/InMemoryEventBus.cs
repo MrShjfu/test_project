@@ -9,7 +9,11 @@ public sealed class InMemoryEventBus : IEventBus
     public async Task PublishAsync(EventEnvelope e, CancellationToken ct = default)
     {
         if (_subs.TryGetValue(e.EventType, out var handlers))
-            foreach (var h in handlers.ToArray()) await h(e, ct); // synchronous dispatch — tests only (ADR-004)
+        {
+            Func<EventEnvelope, CancellationToken, Task>[] snapshot;
+            lock (handlers) snapshot = handlers.ToArray();
+            foreach (var h in snapshot) await h(e, ct); // synchronous dispatch — tests only (ADR-004)
+        }
     }
 
     public IDisposable Subscribe(string eventType, Func<EventEnvelope, CancellationToken, Task> handler)

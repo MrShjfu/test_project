@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Helm.Core.Messaging;
 
@@ -24,8 +25,12 @@ public static class MessagingExtensions
             case "RabbitMQ":
                 var uri = config["Messaging:RabbitMq:Uri"]
                     ?? throw new InvalidOperationException("Messaging:RabbitMq:Uri is required when Messaging:Provider=RabbitMQ");
-                services.AddSingleton<IEventBus>(_ =>
-                    RabbitMqEventBus.ConnectAsync(uri, Environment.MachineName).GetAwaiter().GetResult());
+                services.AddSingleton<IEventBus>(sp =>
+                    RabbitMqEventBus.ConnectAsync(
+                        uri,
+                        Environment.MachineName,
+                        sp.GetService<ILoggerFactory>()?.CreateLogger<RabbitMqEventBus>())
+                        .GetAwaiter().GetResult());
                 break;
 
             case "AzureServiceBus":
