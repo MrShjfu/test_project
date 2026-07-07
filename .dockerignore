@@ -1,0 +1,11 @@
+node_modules
+bin
+obj
+dist
+.git
+.nx
+.superpowers
+coverage
+TestResults
+playwright-report
+test-results

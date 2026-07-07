@@ -25,5 +25,28 @@ services:
       timeout: 3s
       retries: 10
 
+  api:
+    profiles: ["full"]
+    build:
+      context: .
+      dockerfile: apps/api/Helm.Host/Dockerfile
+    environment:
+      ConnectionStrings__Helm: "Host=postgres;Port=5432;Database=helm;Username=helm;Password=helm"
+      Messaging__Provider: RabbitMQ
+      Messaging__RabbitMq__Uri: amqp://helm:helm@rabbitmq:5672
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    ports: ["5000:8080"]
+
+  web-internal:
+    profiles: ["full"]
+    build:
+      context: .
+      dockerfile: apps/web-internal/Dockerfile
+    ports: ["4200:80"]
+
 volumes:
   pgdata:
