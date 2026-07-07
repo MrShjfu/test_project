@@ -1,0 +1,9 @@
+{
+  "name": "<%= schema %>-contracts",
+  "projectType": "library",
+  "sourceRoot": "libs/api/Helm.<%= name %>.Contracts",
+  "targets": {
+    "build": { "executor": "nx:run-commands", "options": { "command": "dotnet build libs/api/Helm.<%= name %>.Contracts/Helm.<%= name %>.Contracts.csproj" } }
+  },
+  "implicitDependencies": ["core"]
+}

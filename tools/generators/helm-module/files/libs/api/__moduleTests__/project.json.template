@@ -1,0 +1,9 @@
+{
+  "name": "<%= schema %>-tests",
+  "projectType": "library",
+  "sourceRoot": "libs/api/Helm.<%= name %>.Tests",
+  "targets": {
+    "test": { "executor": "nx:run-commands", "options": { "command": "dotnet test libs/api/Helm.<%= name %>.Tests/Helm.<%= name %>.Tests.csproj" } }
+  },
+  "implicitDependencies": ["<%= schema %>", "<%= schema %>-contracts", "api"]
+}

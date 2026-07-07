@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/schema",
+  "$id": "HelmModule",
+  "title": "Helm domain module",
+  "type": "object",
+  "cli": "nx",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Module name in PascalCase, e.g. Cpq, Inventory, DesignEngine.",
+      "$default": { "$source": "argv", "index": 0 },
+      "x-prompt": "Module name (PascalCase, e.g. Inventory)?"
+    },
+    "schema": {
+      "type": "string",
+      "description": "Postgres schema name (lowercase), e.g. cpq, inventory.",
+      "x-prompt": "Postgres schema name (lowercase)?"
+    }
+  },
+  "required": ["name", "schema"]
+}

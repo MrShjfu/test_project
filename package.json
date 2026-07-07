@@ -4,6 +4,7 @@
   "private": true,
   "description": "NTG Platform (Helm) - unified sailmaking platform monorepo",
   "devDependencies": {
+    "helm-generators": "file:tools/generators/helm-module",
     "@nx/eslint": "^23.0.1",
     "@nx/js": "^23.0.1",
     "@nx/playwright": "^23.0.1",

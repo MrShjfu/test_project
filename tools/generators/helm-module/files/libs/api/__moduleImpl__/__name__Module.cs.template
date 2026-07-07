@@ -1,0 +1,60 @@
+using Helm.Core;
+using Helm.Core.Outbox;
+using Helm.<%= name %>.Api;
+using Helm.<%= name %>.Infrastructure;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Microsoft.Extensions.Hosting;
+using Npgsql;
+
+namespace Helm.<%= name %>;
+
+public static class <%= name %>Module
+{
+    public static IServiceCollection Add<%= name %>Module(this IServiceCollection services, IConfiguration config)
+    {
+        services.AddDbContext<<%= name %>DbContext>(o => o
+            .UseNpgsql(config.GetConnectionString("Helm"),
+                npgsql => npgsql.MigrationsHistoryTable("__ef_migrations", "<%= schema %>")));
+
+        services.AddHealthChecks().AddCheck<<%= name %>HealthCheck>("<%= schema %>");
+        services.AddHostedService<OutboxRelay<<%= name %>DbContext>>();
+
+        HelmModuleRegistry.Register("<%= name %>", "<%= schema %>");
+
+        return services;
+    }
+
+    public static IEndpointRouteBuilder Map<%= name %>Endpoints(this IEndpointRouteBuilder app)
+    {
+        app.Map<%= name %>InfoEndpoints();
+        return app;
+    }
+}
+
+/// <summary>
+/// Cheap liveness check: can we open a raw connection to the database backing the <%= schema %> schema.
+/// Deliberately does not resolve <see cref="<%= name %>DbContext"/> — that requires an
+/// <c>ICompanyContext</c>, which in turn requires an authenticated request's claims (see
+/// AddHelmAuth), but health checks must also succeed for anonymous/unauthenticated callers.
+/// </summary>
+internal class <%= name %>HealthCheck(IConfiguration config) : IHealthCheck
+{
+    public async Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken ct = default)
+    {
+        try
+        {
+            await using var connection = new NpgsqlConnection(config.GetConnectionString("Helm"));
+            await connection.OpenAsync(ct);
+            return HealthCheckResult.Healthy();
+        }
+        catch (Exception ex)
+        {
+            return HealthCheckResult.Unhealthy(exception: ex);
+        }
+    }
+}

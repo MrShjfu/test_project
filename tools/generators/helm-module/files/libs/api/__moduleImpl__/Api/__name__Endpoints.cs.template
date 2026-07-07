@@ -1,0 +1,17 @@
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
+
+namespace Helm.<%= name %>.Api;
+
+public static class <%= name %>Endpoints
+{
+    public static IEndpointRouteBuilder Map<%= name %>InfoEndpoints(this IEndpointRouteBuilder app)
+    {
+        var group = app.MapGroup("/api/v1/<%= schema %>");
+
+        group.MapGet("/_info", () => Results.Ok(new { module = "<%= name %>" }));
+
+        return app;
+    }
+}
