@@ -2,6 +2,11 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "outDir": "../../dist/out-tsc",
+    // Fixes the stock @nx/react+vite typecheck error: @nx/react's cssmodule.d.ts/image.d.ts
+    // redeclare `*.module.css`, `*.png`, etc. that vite/client.d.ts also declares (both are
+    // node_modules/*.d.ts, upstream-owned) — skipLibCheck is the standard fix for conflicting
+    // library declaration files.
+    "skipLibCheck": true,
     "types": [
       "node",
       "@nx/react/typings/cssmodule.d.ts",

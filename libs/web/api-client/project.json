@@ -5,5 +5,22 @@
   "projectType": "library",
   "tags": ["scope:shared"],
   "// targets": "to see all targets run: nx show project api-client --web",
-  "targets": {}
+  "targets": {
+    "typecheck": {
+      "cache": true,
+      "inputs": ["default", "^production", { "externalDependencies": ["typescript"] }],
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "libs/web/api-client",
+        "commands": [
+          "tsc --noEmit -p tsconfig.lib.json",
+          "tsc --noEmit -p tsconfig.spec.json --skipLibCheck"
+        ],
+        "parallel": false
+      },
+      "metadata": {
+        "description": "Runs type-checking for the project (lib + spec — this project has no vite.config, so @nx/vite/plugin does not infer a typecheck target; spec is included, with --skipLibCheck to silence unrelated node_modules/nx .d.ts noise pulled in transitively by vitest.config.mts, so the @ts-expect-error compile-time regressions in fetch-json.spec.ts are actually enforced)."
+      }
+    }
+  }
 }

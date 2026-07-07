@@ -1,10 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Button, Table } from 'shared-ui';
-import { fetchJson, type components } from 'api-client';
+import { getJson, postJson, type components } from 'api-client';
 
 type CustomerDto = components['schemas']['CustomerDto'];
-type PagedResultOfCustomerDto = components['schemas']['PagedResultOfCustomerDto'];
-type CreateCustomerRequest = components['schemas']['CreateCustomerRequest'];
 
 const CUSTOMERS_PATH = '/api/v1/crm/customers';
 
@@ -33,7 +31,7 @@ export function CustomerListPage({ token: tokenProp }: CustomerListPageProps = {
     setLoading(true);
     setError(null);
     try {
-      const page = await fetchJson<PagedResultOfCustomerDto>(CUSTOMERS_PATH, {
+      const page = await getJson(CUSTOMERS_PATH, {
         token: effectiveToken || undefined,
       });
       setCustomers(page.items);
@@ -57,12 +55,11 @@ export function CustomerListPage({ token: tokenProp }: CustomerListPageProps = {
     e.preventDefault();
     setError(null);
     try {
-      const request: CreateCustomerRequest = { name, email };
-      await fetchJson<CustomerDto>(CUSTOMERS_PATH, {
-        method: 'POST',
-        body: JSON.stringify(request),
-        token: effectiveToken || undefined,
-      });
+      await postJson(
+        CUSTOMERS_PATH,
+        { name, email },
+        { token: effectiveToken || undefined }
+      );
       setName('');
       setEmail('');
       await loadCustomers();
