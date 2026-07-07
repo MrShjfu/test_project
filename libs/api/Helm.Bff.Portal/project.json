@@ -1,0 +1,9 @@
+{
+  "name": "bff-portal",
+  "projectType": "library",
+  "sourceRoot": "libs/api/Helm.Bff.Portal",
+  "targets": {
+    "build": { "executor": "nx:run-commands", "options": { "command": "dotnet build libs/api/Helm.Bff.Portal/Helm.Bff.Portal.csproj" } }
+  },
+  "implicitDependencies": ["core"]
+}

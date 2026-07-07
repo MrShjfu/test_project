@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FluentAssertions" Version="7.2.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="10.0.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
+    <PackageReference Include="xunit" Version="2.9.3" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="3.1.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Reuses Helm.Crm.Tests' HelmApiFactory (public, shared harness — see its doc comment)
+         instead of forking a new WebApplicationFactory subclass. -->
+    <ProjectReference Include="..\Helm.Crm.Tests\Helm.Crm.Tests.csproj" />
+    <ProjectReference Include="..\Helm.Crm.Contracts\Helm.Crm.Contracts.csproj" />
+    <ProjectReference Include="..\..\..\apps\api\Helm.Host\Helm.Host.csproj" />
+  </ItemGroup>
+
+</Project>

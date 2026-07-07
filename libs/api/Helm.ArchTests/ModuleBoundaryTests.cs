@@ -71,6 +71,23 @@ public class ModuleBoundaryTests
     }
 
     /// <summary>
+    /// Mirrors <see cref="Discovery_finds_the_known_Crm_module"/> for BFFs: guards against
+    /// <see cref="Bffs_reference_no_module_implementation"/> silently passing vacuously forever
+    /// because <c>TryAssembly("Bff.Internal", ...)</c> always returns false (e.g. a discovery bug,
+    /// or Helm.Host losing its reference to Helm.Bff.Internal). Task 16 created
+    /// Helm.Bff.Internal/Portal/Kiosk and wired all three into Helm.Host, so its absence here
+    /// means discovery itself is broken, not that the BFF was removed. Tracked from the Task 12
+    /// review as the vacuous-pass hole in the BFF rule.
+    /// </summary>
+    [Fact]
+    public void Discovery_finds_the_known_Bff_Internal_assembly()
+    {
+        ModuleDiscovery.TryAssembly("Bff.Internal", out _).Should().BeTrue(
+            "Helm.Bff.Internal must be discoverable once Task 16 wires it into Helm.Host; " +
+            "otherwise Bffs_reference_no_module_implementation passes vacuously for every BFF");
+    }
+
+    /// <summary>
     /// Skips (rather than fails) per-BFF until Task 16 creates Helm.Bff.Internal/Portal/Kiosk —
     /// TryAssembly means "no BFF projects yet" is not conflated with "a BFF violated the rule".
     /// Once BFFs exist this exercises the real ADR-008 boundary (BFFs compose and shape only).

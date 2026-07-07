@@ -1,0 +1,9 @@
+{
+  "name": "bff-kiosk",
+  "projectType": "library",
+  "sourceRoot": "libs/api/Helm.Bff.Kiosk",
+  "targets": {
+    "build": { "executor": "nx:run-commands", "options": { "command": "dotnet build libs/api/Helm.Bff.Kiosk/Helm.Bff.Kiosk.csproj" } }
+  },
+  "implicitDependencies": ["core"]
+}

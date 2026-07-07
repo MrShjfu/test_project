@@ -1,0 +1,9 @@
+{
+  "name": "bff-internal",
+  "projectType": "library",
+  "sourceRoot": "libs/api/Helm.Bff.Internal",
+  "targets": {
+    "build": { "executor": "nx:run-commands", "options": { "command": "dotnet build libs/api/Helm.Bff.Internal/Helm.Bff.Internal.csproj" } }
+  },
+  "implicitDependencies": ["core", "crm-contracts"]
+}

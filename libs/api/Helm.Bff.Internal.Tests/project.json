@@ -1,0 +1,9 @@
+{
+  "name": "bff-internal-tests",
+  "projectType": "library",
+  "sourceRoot": "libs/api/Helm.Bff.Internal.Tests",
+  "targets": {
+    "test": { "executor": "nx:run-commands", "options": { "command": "dotnet test libs/api/Helm.Bff.Internal.Tests/Helm.Bff.Internal.Tests.csproj" } }
+  },
+  "implicitDependencies": ["bff-internal", "crm-tests", "crm-contracts", "api"]
+}

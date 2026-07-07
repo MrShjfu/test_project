@@ -13,9 +13,16 @@ namespace Helm.Crm.Api;
 
 public static class CrmEndpoints
 {
+    // Matches Helm.Bff.Internal.InternalBff.OpenApiDocumentName. Duplicated as a literal rather
+    // than referenced because Helm.Crm must not depend on Helm.Bff.Internal (ADR-001/002 module
+    // isolation runs the other way: BFFs depend on module Contracts, never the reverse).
+    private const string InternalBffGroupName = "internal";
+
     public static IEndpointRouteBuilder MapCrmCustomerEndpoints(this IEndpointRouteBuilder app)
     {
-        var group = app.MapGroup("/api/v1/crm");
+        // Disclosed change (Task 16): tagged "internal" so the Internal Platform OpenAPI document
+        // discloses module APIs to NTG-internal staff tooling, per the per-BFF-OpenAPI decision.
+        var group = app.MapGroup("/api/v1/crm").WithGroupName(InternalBffGroupName);
 
         group.MapPost("/customers", CreateCustomer);
         group.MapGet("/customers", ListCustomers);

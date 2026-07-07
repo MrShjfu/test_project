@@ -11,6 +11,9 @@
     <ProjectReference Include="..\..\..\libs\api\Helm.Design\Helm.Design.csproj" />
     <ProjectReference Include="..\..\..\libs\api\Helm.ProposalOrder\Helm.ProposalOrder.csproj" />
     <ProjectReference Include="..\..\..\libs\api\Helm.Cpq\Helm.Cpq.csproj" />
+    <ProjectReference Include="..\..\..\libs\api\Helm.Bff.Internal\Helm.Bff.Internal.csproj" />
+    <ProjectReference Include="..\..\..\libs\api\Helm.Bff.Portal\Helm.Bff.Portal.csproj" />
+    <ProjectReference Include="..\..\..\libs\api\Helm.Bff.Kiosk\Helm.Bff.Kiosk.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.9">
