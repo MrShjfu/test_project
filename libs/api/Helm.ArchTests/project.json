@@ -1,0 +1,9 @@
+{
+  "name": "arch-tests",
+  "projectType": "library",
+  "sourceRoot": "libs/api/Helm.ArchTests",
+  "targets": {
+    "test": { "executor": "nx:run-commands", "options": { "command": "dotnet test libs/api/Helm.ArchTests/Helm.ArchTests.csproj" } }
+  },
+  "implicitDependencies": ["api"]
+}
