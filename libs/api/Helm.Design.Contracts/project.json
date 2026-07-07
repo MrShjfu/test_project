@@ -1,0 +1,9 @@
+{
+  "name": "design-contracts",
+  "projectType": "library",
+  "sourceRoot": "libs/api/Helm.Design.Contracts",
+  "targets": {
+    "build": { "executor": "nx:run-commands", "options": { "command": "dotnet build libs/api/Helm.Design.Contracts/Helm.Design.Contracts.csproj" } }
+  },
+  "implicitDependencies": ["core"]
+}

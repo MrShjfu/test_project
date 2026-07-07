@@ -1,0 +1,9 @@
+{
+  "name": "cpq-tests",
+  "projectType": "library",
+  "sourceRoot": "libs/api/Helm.Cpq.Tests",
+  "targets": {
+    "test": { "executor": "nx:run-commands", "options": { "command": "dotnet test libs/api/Helm.Cpq.Tests/Helm.Cpq.Tests.csproj" } }
+  },
+  "implicitDependencies": ["cpq", "cpq-contracts", "api"]
+}

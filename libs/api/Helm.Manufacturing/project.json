@@ -1,0 +1,10 @@
+{
+  "name": "manufacturing",
+  "projectType": "library",
+  "sourceRoot": "libs/api/Helm.Manufacturing",
+  "targets": {
+    "build": { "executor": "nx:run-commands", "options": { "command": "dotnet build libs/api/Helm.Manufacturing/Helm.Manufacturing.csproj" } },
+    "test":  { "executor": "nx:run-commands", "options": { "command": "dotnet test libs/api/Helm.Manufacturing.Tests/Helm.Manufacturing.Tests.csproj" } }
+  },
+  "implicitDependencies": ["core", "manufacturing-contracts"]
+}

@@ -1,0 +1,9 @@
+{
+  "name": "inventory-contracts",
+  "projectType": "library",
+  "sourceRoot": "libs/api/Helm.Inventory.Contracts",
+  "targets": {
+    "build": { "executor": "nx:run-commands", "options": { "command": "dotnet build libs/api/Helm.Inventory.Contracts/Helm.Inventory.Contracts.csproj" } }
+  },
+  "implicitDependencies": ["core"]
+}

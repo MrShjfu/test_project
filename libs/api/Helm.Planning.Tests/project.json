@@ -1,0 +1,9 @@
+{
+  "name": "planning-tests",
+  "projectType": "library",
+  "sourceRoot": "libs/api/Helm.Planning.Tests",
+  "targets": {
+    "test": { "executor": "nx:run-commands", "options": { "command": "dotnet test libs/api/Helm.Planning.Tests/Helm.Planning.Tests.csproj" } }
+  },
+  "implicitDependencies": ["planning", "planning-contracts", "api"]
+}

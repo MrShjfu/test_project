@@ -1,0 +1,9 @@
+{
+  "name": "proposal_order-contracts",
+  "projectType": "library",
+  "sourceRoot": "libs/api/Helm.ProposalOrder.Contracts",
+  "targets": {
+    "build": { "executor": "nx:run-commands", "options": { "command": "dotnet build libs/api/Helm.ProposalOrder.Contracts/Helm.ProposalOrder.Contracts.csproj" } }
+  },
+  "implicitDependencies": ["core"]
+}

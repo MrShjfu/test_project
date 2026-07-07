@@ -3,6 +3,9 @@
   "version": "0.0.0",
   "private": true,
   "description": "NTG Platform (Helm) - unified sailmaking platform monorepo",
+  "scripts": {
+    "build:generators": "tsc -p tools/generators/helm-module/tsconfig.json"
+  },
   "devDependencies": {
     "helm-generators": "file:tools/generators/helm-module",
     "@nx/eslint": "^23.0.1",

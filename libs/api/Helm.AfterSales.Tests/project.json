@@ -1,0 +1,9 @@
+{
+  "name": "after_sales-tests",
+  "projectType": "library",
+  "sourceRoot": "libs/api/Helm.AfterSales.Tests",
+  "targets": {
+    "test": { "executor": "nx:run-commands", "options": { "command": "dotnet test libs/api/Helm.AfterSales.Tests/Helm.AfterSales.Tests.csproj" } }
+  },
+  "implicitDependencies": ["after_sales", "after_sales-contracts", "api"]
+}

@@ -1,0 +1,9 @@
+{
+  "name": "design-tests",
+  "projectType": "library",
+  "sourceRoot": "libs/api/Helm.Design.Tests",
+  "targets": {
+    "test": { "executor": "nx:run-commands", "options": { "command": "dotnet test libs/api/Helm.Design.Tests/Helm.Design.Tests.csproj" } }
+  },
+  "implicitDependencies": ["design", "design-contracts", "api"]
+}

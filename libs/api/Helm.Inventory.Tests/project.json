@@ -1,0 +1,9 @@
+{
+  "name": "inventory-tests",
+  "projectType": "library",
+  "sourceRoot": "libs/api/Helm.Inventory.Tests",
+  "targets": {
+    "test": { "executor": "nx:run-commands", "options": { "command": "dotnet test libs/api/Helm.Inventory.Tests/Helm.Inventory.Tests.csproj" } }
+  },
+  "implicitDependencies": ["inventory", "inventory-contracts", "api"]
+}

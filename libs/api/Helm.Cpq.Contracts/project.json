@@ -1,0 +1,9 @@
+{
+  "name": "cpq-contracts",
+  "projectType": "library",
+  "sourceRoot": "libs/api/Helm.Cpq.Contracts",
+  "targets": {
+    "build": { "executor": "nx:run-commands", "options": { "command": "dotnet build libs/api/Helm.Cpq.Contracts/Helm.Cpq.Contracts.csproj" } }
+  },
+  "implicitDependencies": ["core"]
+}

@@ -1,0 +1,9 @@
+{
+  "name": "fulfilment-tests",
+  "projectType": "library",
+  "sourceRoot": "libs/api/Helm.Fulfilment.Tests",
+  "targets": {
+    "test": { "executor": "nx:run-commands", "options": { "command": "dotnet test libs/api/Helm.Fulfilment.Tests/Helm.Fulfilment.Tests.csproj" } }
+  },
+  "implicitDependencies": ["fulfilment", "fulfilment-contracts", "api"]
+}

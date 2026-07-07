@@ -2,6 +2,15 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\libs\api\Helm.Core\Helm.Core.csproj" />
     <ProjectReference Include="..\..\..\libs\api\Helm.Crm\Helm.Crm.csproj" />
+    <ProjectReference Include="..\..\..\libs\api\Helm.AfterSales\Helm.AfterSales.csproj" />
+    <ProjectReference Include="..\..\..\libs\api\Helm.Fulfilment\Helm.Fulfilment.csproj" />
+    <ProjectReference Include="..\..\..\libs\api\Helm.Manufacturing\Helm.Manufacturing.csproj" />
+    <ProjectReference Include="..\..\..\libs\api\Helm.PreProcessing\Helm.PreProcessing.csproj" />
+    <ProjectReference Include="..\..\..\libs\api\Helm.Inventory\Helm.Inventory.csproj" />
+    <ProjectReference Include="..\..\..\libs\api\Helm.Planning\Helm.Planning.csproj" />
+    <ProjectReference Include="..\..\..\libs\api\Helm.Design\Helm.Design.csproj" />
+    <ProjectReference Include="..\..\..\libs\api\Helm.ProposalOrder\Helm.ProposalOrder.csproj" />
+    <ProjectReference Include="..\..\..\libs\api\Helm.Cpq\Helm.Cpq.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.9">

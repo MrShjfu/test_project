@@ -1,0 +1,9 @@
+{
+  "name": "pre_processing-tests",
+  "projectType": "library",
+  "sourceRoot": "libs/api/Helm.PreProcessing.Tests",
+  "targets": {
+    "test": { "executor": "nx:run-commands", "options": { "command": "dotnet test libs/api/Helm.PreProcessing.Tests/Helm.PreProcessing.Tests.csproj" } }
+  },
+  "implicitDependencies": ["pre_processing", "pre_processing-contracts", "api"]
+}
