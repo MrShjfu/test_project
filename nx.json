@@ -3,7 +3,16 @@
   "defaultBase": "main",
   "namedInputs": {
     "default": ["{projectRoot}/**/*"],
-    "production": ["default", "!{projectRoot}/**/*.spec.*", "!{projectRoot}/**/*.test.*"]
+    "production": [
+      "default",
+      "!{projectRoot}/**/*.spec.*",
+      "!{projectRoot}/**/*.test.*",
+      "!{projectRoot}/.eslintrc.json",
+      "!{projectRoot}/eslint.config.mjs",
+      "!{projectRoot}/**/?(*.)+(spec|test).[jt]s?(x)?(.snap)",
+      "!{projectRoot}/tsconfig.spec.json",
+      "!{projectRoot}/src/test-setup.[jt]s"
+    ]
   },
   "targetDefaults": {
     "build": {
@@ -15,5 +24,53 @@
     "lint": {
       "cache": true
     }
-  }
+  },
+  "plugins": [
+    {
+      "plugin": "@nx/eslint/plugin",
+      "options": {
+        "targetName": "lint"
+      }
+    },
+    {
+      "plugin": "@nx/vitest",
+      "options": {
+        "testTargetName": "test",
+        "ciTargetName": "test-ci",
+        "testMode": "watch"
+      }
+    },
+    {
+      "plugin": "@nx/vite/plugin",
+      "options": {
+        "buildTargetName": "build",
+        "serveTargetName": "serve",
+        "devTargetName": "dev",
+        "previewTargetName": "preview",
+        "serveStaticTargetName": "serve-static",
+        "typecheckTargetName": "typecheck",
+        "buildDepsTargetName": "build-deps",
+        "watchDepsTargetName": "watch-deps"
+      }
+    }
+  ],
+  "generators": {
+    "@nx/react": {
+      "library": {
+        "style": "css",
+        "linter": "eslint",
+        "unitTestRunner": "vitest"
+      },
+      "application": {
+        "babel": true,
+        "style": "css",
+        "linter": "eslint",
+        "bundler": "vite"
+      },
+      "component": {
+        "style": "css"
+      }
+    }
+  },
+  "analytics": true
 }

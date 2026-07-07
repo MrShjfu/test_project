@@ -1,4 +1,5 @@
 using Helm.Crm.Contracts;
+using Helm.Crm.Contracts.Dtos;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
@@ -14,7 +15,9 @@ public static class CustomerListEndpoint
 {
     public static IEndpointRouteBuilder MapCustomerListEndpoint(this IEndpointRouteBuilder app)
     {
-        app.MapGet("/customers", GetCustomers);
+        app.MapGet("/customers", GetCustomers)
+            .Produces<IReadOnlyList<CustomerDto>>()
+            .ProducesValidationProblem();
         return app;
     }
 

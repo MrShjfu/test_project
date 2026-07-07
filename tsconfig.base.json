@@ -4,6 +4,10 @@
     "target": "es2022",
     "moduleResolution": "bundler",
     "baseUrl": ".",
-    "paths": {}
+    "paths": {
+      "shared-ui": ["./libs/web/shared-ui/src/index.ts"],
+      "api-client": ["./libs/web/api-client/src/index.ts"],
+      "feature-crm": ["./libs/web/feature-crm/src/index.ts"]
+    }
   }
 }

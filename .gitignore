@@ -20,3 +20,6 @@ coverage/
 TestResults/
 playwright-report/
 test-results/
+
+vitest.config.*.timestamp*
+vite.config.*.timestamp*

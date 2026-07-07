@@ -24,9 +24,18 @@ public static class CrmEndpoints
         // discloses module APIs to NTG-internal staff tooling, per the per-BFF-OpenAPI decision.
         var group = app.MapGroup("/api/v1/crm").WithGroupName(InternalBffGroupName);
 
-        group.MapPost("/customers", CreateCustomer);
-        group.MapGet("/customers", ListCustomers);
-        group.MapGet("/customers/{id:guid}", GetCustomer);
+        // .Produces<T>() calls below are OpenAPI-metadata-only (no behavior change): minimal API
+        // handlers returning IResult can't have their response body inferred, so without these the
+        // generated internal.json (and therefore libs/web/api-client's schema.d.ts) has untyped
+        // response content — Task 17 depends on typed response schemas here.
+        group.MapPost("/customers", CreateCustomer)
+            .Produces<CustomerDto>(StatusCodes.Status201Created)
+            .ProducesValidationProblem();
+        group.MapGet("/customers", ListCustomers)
+            .Produces<PagedResult<CustomerDto>>();
+        group.MapGet("/customers/{id:guid}", GetCustomer)
+            .Produces<CustomerDto>()
+            .ProducesProblem(StatusCodes.Status404NotFound);
 
         return app;
     }
