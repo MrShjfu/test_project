@@ -1,0 +1,9 @@
+{
+  "name": "crm-contracts",
+  "projectType": "library",
+  "sourceRoot": "libs/api/Helm.Crm.Contracts",
+  "targets": {
+    "build": { "executor": "nx:run-commands", "options": { "command": "dotnet build libs/api/Helm.Crm.Contracts/Helm.Crm.Contracts.csproj" } }
+  },
+  "implicitDependencies": ["core"]
+}

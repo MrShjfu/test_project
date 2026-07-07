@@ -19,7 +19,14 @@ public static class HelmJobsExtensions
             .UsePostgreSqlStorage(options => options
                 .UseNpgsqlConnection(config.GetConnectionString("Helm")),
                 new PostgreSqlStorageOptions { SchemaName = "hangfire" }));
-        services.AddHangfireServer();
+
+        // Jobs:Enabled (default true) lets test hosts skip spinning up the Hangfire server —
+        // avoids polling/thread overhead and startup races against a Testcontainers Postgres
+        // that's about to be migrated. Hangfire storage/dashboard wiring above still registers
+        // so DI resolves; only the background server thread is skipped.
+        if (config.GetValue("Jobs:Enabled", true))
+            services.AddHangfireServer();
+
         return services;
     }
 

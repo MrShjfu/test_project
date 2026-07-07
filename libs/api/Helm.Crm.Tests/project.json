@@ -1,0 +1,9 @@
+{
+  "name": "crm-tests",
+  "projectType": "library",
+  "sourceRoot": "libs/api/Helm.Crm.Tests",
+  "targets": {
+    "test": { "executor": "nx:run-commands", "options": { "command": "dotnet test libs/api/Helm.Crm.Tests/Helm.Crm.Tests.csproj" } }
+  },
+  "implicitDependencies": ["crm", "crm-contracts", "api"]
+}

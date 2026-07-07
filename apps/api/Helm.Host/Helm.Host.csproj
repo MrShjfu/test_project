@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
   <ItemGroup>
     <ProjectReference Include="..\..\..\libs\api\Helm.Core\Helm.Core.csproj" />
+    <ProjectReference Include="..\..\..\libs\api\Helm.Crm\Helm.Crm.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.9">
