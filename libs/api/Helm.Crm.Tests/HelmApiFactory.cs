@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.IdentityModel.Tokens;
 using Testcontainers.PostgreSql;
@@ -24,6 +25,16 @@ namespace Helm.Crm.Tests;
 /// outbox relay disabled for determinism, and a symmetric-key JWT issuer ("helm-tests") so tests
 /// can mint their own tokens instead of depending on Entra. Public and reused by later module test
 /// projects (e.g. Task 15) via a project reference to Helm.Crm.Tests.
+///
+/// Disclosed change (Task 15): added a small set of `protected virtual` extension points
+/// (<see cref="ConnectionString"/>, <see cref="ConfigureExtraAppConfiguration"/>,
+/// <see cref="ConfigureExtraServices"/>, <see cref="MigrateExtraAsync"/>, <see cref="DisposeExtraAsync"/>)
+/// so a subclass in a later test project (Helm.DemoSlice.Tests' DemoSliceFactory) can add a
+/// RabbitMQ container, flip Messaging:Provider/Outbox:RelayEnabled, migrate an additional module
+/// schema, register a test log sink, and clean its own extra resources up — without forking this
+/// class or widening its private fields. Default behavior (no override) is byte-for-byte what
+/// existed before: InMemory messaging, relay disabled, Core+Crm migrated only. Existing
+/// CrmApiTests/CpqApiTests do not override any hook and are unaffected.
 /// </summary>
 public class HelmApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
 {
@@ -32,6 +43,15 @@ public class HelmApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
         new(Encoding.UTF8.GetBytes("helm-tests-signing-key-at-least-32-bytes-long!!"));
 
     private readonly PostgreSqlContainer _container = new PostgreSqlBuilder("postgres:17").Build();
+
+    /// <summary>Postgres connection string for the shared container, for subclasses that need to
+    /// build additional module DbContexts or run raw SQL against other schemas.</summary>
+    protected string ConnectionString => _container.GetConnectionString();
+
+    /// <summary>Captures every message logged by the running app (all categories), so a test can
+    /// assert a specific message was logged — e.g. ModuleDbContext's ADR-003 cross-company AUDIT
+    /// warning — without any production code change to make logging test-observable.</summary>
+    public TestLogSink LogSink { get; } = new();
 
     public async Task InitializeAsync()
     {
@@ -50,7 +70,13 @@ public class HelmApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
 
         using var crm = CreateSystemCrmDbContext();
         await crm.Database.MigrateAsync();
+
+        await MigrateExtraAsync();
     }
+
+    /// <summary>Hook for a subclass to migrate additional module schemas (e.g. Cpq) beyond
+    /// Core+Crm. Runs after Core and Crm are migrated. No-op by default.</summary>
+    protected virtual Task MigrateExtraAsync() => Task.CompletedTask;
 
     /// <summary>Builds a <see cref="CrmDbContext"/> outside DI, with a throwaway group-admin
     /// <see cref="ICompanyContext"/>, for infrastructure operations that run outside any HTTP
@@ -81,8 +107,13 @@ public class HelmApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
 
     async Task IAsyncLifetime.DisposeAsync()
     {
+        await DisposeExtraAsync();
         await _container.DisposeAsync();
     }
+
+    /// <summary>Hook for a subclass to dispose additional resources (e.g. a RabbitMQ container)
+    /// before the shared Postgres container is disposed. No-op by default.</summary>
+    protected virtual Task DisposeExtraAsync() => Task.CompletedTask;
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
@@ -99,6 +130,10 @@ public class HelmApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
                 ["Authentication:Schemes:Bearer:ValidIssuer"] = Issuer,
                 ["Authentication:Schemes:Bearer:ValidAudiences:0"] = Issuer,
             });
+
+            // Later registrations override earlier ones for the same key, so a subclass hook can
+            // flip e.g. Messaging:Provider/Outbox:RelayEnabled without this class knowing about it.
+            ConfigureExtraAppConfiguration(config);
         });
 
         builder.ConfigureServices(services =>
@@ -110,7 +145,25 @@ public class HelmApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
                 o.TokenValidationParameters.ValidAudience = Issuer;
                 o.TokenValidationParameters.ValidateIssuerSigningKey = true;
             });
+
+            services.AddSingleton<ILoggerProvider>(LogSink);
+
+            ConfigureExtraServices(services);
         });
+    }
+
+    /// <summary>Hook for a subclass to add/override app configuration (e.g. point
+    /// Messaging:Provider at RabbitMQ with a container URI, flip Outbox:RelayEnabled to true).
+    /// No-op by default.</summary>
+    protected virtual void ConfigureExtraAppConfiguration(IConfigurationBuilder config)
+    {
+    }
+
+    /// <summary>Hook for a subclass to register additional test-only services (e.g. an
+    /// <see cref="Microsoft.Extensions.Logging.ILoggerProvider"/> spy to capture log output from
+    /// the running app). No-op by default.</summary>
+    protected virtual void ConfigureExtraServices(IServiceCollection services)
+    {
     }
 
     /// <summary>Mints a bearer-token-authenticated client for <paramref name="companyId"/> with the given module roles.</summary>
@@ -151,6 +204,16 @@ public class HelmApiFactory : WebApplicationFactory<Program>, IAsyncLifetime
         using var db = CreateSystemCrmDbContext();
 #pragma warning disable EF1002 // sql is the test's own literal string, not user input
         return await db.Database.SqlQueryRaw<long>($"SELECT ({sql}) AS \"Value\"").SingleAsync();
+#pragma warning restore EF1002
+    }
+
+    /// <summary>Same as <see cref="CountAsync"/> but for a scalar text/uuid-as-text result (e.g.
+    /// reading an id back out of crm.outbox for a test that needs the exact original event id).</summary>
+    public async Task<string> ScalarStringAsync(string sql)
+    {
+        using var db = CreateSystemCrmDbContext();
+#pragma warning disable EF1002 // sql is the test's own literal string, not user input
+        return await db.Database.SqlQueryRaw<string>($"SELECT ({sql}) AS \"Value\"").SingleAsync();
 #pragma warning restore EF1002
     }
 }

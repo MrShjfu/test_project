@@ -1,4 +1,5 @@
 using Helm.Core.Messaging;
+using Helm.Core.MultiCompany;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -13,6 +14,24 @@ namespace Helm.Core.Outbox;
 /// (this module, N replicas) each grab a disjoint batch instead of blocking or double-publishing.
 /// Registered once per publishing module by that module's <c>Add&lt;Mod&gt;Module</c> extension.
 /// </summary>
+///
+/// <remarks>
+/// Disclosed change (Task 15): resolving <typeparamref name="TContext"/> via
+/// <c>scope.ServiceProvider.GetRequiredService&lt;TContext&gt;()</c> — the original, only, way —
+/// throws "no http context" for every real module today, because <c>ICompanyContext</c> (required
+/// by every <c>ModuleDbContext</c> constructor) is registered only as scoped-from-HTTP-request
+/// (see <c>HelmAuthExtensions.AddHelmAuth</c>). This was latent since Task 9/11 (every module
+/// registers <c>OutboxRelay&lt;ItsDbContext&gt;</c> the same way) but never observed because every
+/// prior module test disables the relay (<c>Outbox:RelayEnabled=false</c>) — Task 15 is the first
+/// to turn it on for a real end-to-end test and hit it directly. The outbox/processed_events
+/// tables the relay touches are not company-owned (no CompanyId, no query filter — see
+/// OutboxModelBuilder), so which company identity satisfies the DbContext constructor is
+/// immaterial to correctness; <see cref="ResolveDbContext"/> supplies a fixed system identity via
+/// <see cref="ActivatorUtilities"/> only when <typeparamref name="TContext"/>'s constructor actually
+/// declares an <see cref="ICompanyContext"/> parameter (detected by reflection, not by probing with
+/// try/catch) — so <c>OutboxTestDb</c> (Helm.Core.Tests' plain DbContext with no such parameter)
+/// keeps resolving via plain DI, unaffected.
+/// </remarks>
 public class OutboxRelay<TContext>(
     IServiceScopeFactory scopeFactory,
     IEventBus bus,
@@ -21,6 +40,29 @@ public class OutboxRelay<TContext>(
     where TContext : DbContext
 {
     private const int BatchSize = 20;
+
+    // GetConstructors() (no BindingFlags) returns public instance constructors only — true for
+    // every current ModuleDbContext subclass, which all use a public primary constructor. If a
+    // future ModuleDbContext ever hides its ICompanyContext-accepting constructor as non-public,
+    // this would stop matching and ResolveDbContext would silently fall back to the pre-Task-15
+    // GetRequiredService path (reproducing the "no http context" failure this hook exists to
+    // avoid) — so keep module DbContext constructors public.
+    private static readonly bool RequiresCompanyContext =
+        typeof(TContext).GetConstructors()
+            .SelectMany(c => c.GetParameters())
+            .Any(p => p.ParameterType == typeof(ICompanyContext));
+
+    /// <summary>
+    /// Resolves <typeparamref name="TContext"/> for this poll iteration. See the type-level remarks
+    /// for why a <c>ModuleDbContext</c>-shaped TContext can't simply be resolved via
+    /// <c>GetRequiredService</c> in a background service, and why a fixed system identity (rather
+    /// than a per-event one, unlike IdempotentConsumer) is correct here: the outbox/processed_events
+    /// tables are module-schema-wide bookkeeping, not company-owned data.
+    /// </summary>
+    protected virtual TContext ResolveDbContext(IServiceScope scope) =>
+        RequiresCompanyContext
+            ? ActivatorUtilities.CreateInstance<TContext>(scope.ServiceProvider, new FixedCompanyContext("ntg-system"))
+            : scope.ServiceProvider.GetRequiredService<TContext>();
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -45,7 +87,7 @@ public class OutboxRelay<TContext>(
     internal async Task RunOnceAsync(CancellationToken ct)
     {
         using var scope = scopeFactory.CreateScope();
-        var db = scope.ServiceProvider.GetRequiredService<TContext>();
+        var db = ResolveDbContext(scope);
         var schema = db.Model.GetDefaultSchema()
             ?? throw new InvalidOperationException($"{typeof(TContext).Name} has no default schema configured.");
 

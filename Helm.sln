@@ -79,6 +79,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Helm.AfterSales.Contracts",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Helm.AfterSales.Tests", "libs\api\Helm.AfterSales.Tests\Helm.AfterSales.Tests.csproj", "{CA01E9A4-5B6D-4386-AC63-87D58C94FB54}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Helm.DemoSlice.Tests", "libs\api\Helm.DemoSlice.Tests\Helm.DemoSlice.Tests.csproj", "{091F8330-74FB-4A32-903F-EA4082B8F6E9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -497,6 +499,18 @@ Global
 		{CA01E9A4-5B6D-4386-AC63-87D58C94FB54}.Release|x64.Build.0 = Release|Any CPU
 		{CA01E9A4-5B6D-4386-AC63-87D58C94FB54}.Release|x86.ActiveCfg = Release|Any CPU
 		{CA01E9A4-5B6D-4386-AC63-87D58C94FB54}.Release|x86.Build.0 = Release|Any CPU
+		{091F8330-74FB-4A32-903F-EA4082B8F6E9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{091F8330-74FB-4A32-903F-EA4082B8F6E9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{091F8330-74FB-4A32-903F-EA4082B8F6E9}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{091F8330-74FB-4A32-903F-EA4082B8F6E9}.Debug|x64.Build.0 = Debug|Any CPU
+		{091F8330-74FB-4A32-903F-EA4082B8F6E9}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{091F8330-74FB-4A32-903F-EA4082B8F6E9}.Debug|x86.Build.0 = Debug|Any CPU
+		{091F8330-74FB-4A32-903F-EA4082B8F6E9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{091F8330-74FB-4A32-903F-EA4082B8F6E9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{091F8330-74FB-4A32-903F-EA4082B8F6E9}.Release|x64.ActiveCfg = Release|Any CPU
+		{091F8330-74FB-4A32-903F-EA4082B8F6E9}.Release|x64.Build.0 = Release|Any CPU
+		{091F8330-74FB-4A32-903F-EA4082B8F6E9}.Release|x86.ActiveCfg = Release|Any CPU
+		{091F8330-74FB-4A32-903F-EA4082B8F6E9}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -538,5 +552,6 @@ Global
 		{B231255E-F8B3-4957-A782-AE462C3A8D76} = {A9627159-C3CE-B976-3DC9-5BC25BE4B414}
 		{66DE9A4A-C7DA-4C6A-9E36-964E57FD4AC2} = {A9627159-C3CE-B976-3DC9-5BC25BE4B414}
 		{CA01E9A4-5B6D-4386-AC63-87D58C94FB54} = {A9627159-C3CE-B976-3DC9-5BC25BE4B414}
+		{091F8330-74FB-4A32-903F-EA4082B8F6E9} = {A9627159-C3CE-B976-3DC9-5BC25BE4B414}
 	EndGlobalSection
 EndGlobal

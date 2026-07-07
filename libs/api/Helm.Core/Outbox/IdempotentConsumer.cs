@@ -37,10 +37,31 @@ public abstract class IdempotentConsumer<TContext, TEvent>(
 
     protected abstract Task HandleAsync(TEvent evt, TContext db);
 
+    /// <summary>
+    /// Disclosed change (Task 15): supplies <typeparamref name="TContext"/> for this envelope.
+    /// Default resolves it from the scope's DI container — the original, still-current behavior
+    /// for any consumer that doesn't override this. A consumer whose TContext requires a
+    /// per-request <c>ICompanyContext</c> (e.g. CpqDbContext, ADR-003) has no ambient HTTP request
+    /// to resolve one from here, so it overrides this hook to construct TContext itself with an
+    /// <c>ICompanyContext</c> derived from the event's own company id — never a global/fixed
+    /// company (see FixedCompanyContext). Takes the deserialized event so that derivation is
+    /// possible; this is why deserialization was moved earlier in <see cref="OnEnvelopeAsync"/>.
+    /// </summary>
+    protected virtual TContext ResolveDbContext(IServiceScope scope, TEvent evt) =>
+        scope.ServiceProvider.GetRequiredService<TContext>();
+
     private async Task OnEnvelopeAsync(EventEnvelope envelope, CancellationToken ct)
     {
         using var scope = scopeFactory.CreateScope();
-        var db = scope.ServiceProvider.GetRequiredService<TContext>();
+
+        // Deserialize before resolving TContext (reordered from the original resolve-then-deserialize
+        // sequence) so ResolveDbContext can see the event and derive a per-event ICompanyContext from
+        // it when overridden. Deserialization is pure/side-effect-free, so moving it earlier doesn't
+        // change behavior for the default hook (which ignores evt) or for existing consumers/tests.
+        var evt = JsonSerializer.Deserialize<TEvent>(envelope.PayloadJson)
+            ?? throw new InvalidOperationException($"Could not deserialize payload for {envelope.EventType}.");
+
+        var db = ResolveDbContext(scope, evt);
 
         await using var tx = await db.Database.BeginTransactionAsync(ct);
 
@@ -55,9 +76,6 @@ public abstract class IdempotentConsumer<TContext, TEvent>(
             await tx.RollbackAsync(ct);
             return;
         }
-
-        var evt = JsonSerializer.Deserialize<TEvent>(envelope.PayloadJson)
-            ?? throw new InvalidOperationException($"Could not deserialize payload for {envelope.EventType}.");
 
         await HandleAsync(evt, db);
         await db.SaveChangesAsync(ct);

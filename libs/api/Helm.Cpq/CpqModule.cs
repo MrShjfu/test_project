@@ -1,6 +1,7 @@
 using Helm.Core;
 using Helm.Core.Outbox;
 using Helm.Cpq.Api;
+using Helm.Cpq.Application;
 using Helm.Cpq.Infrastructure;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
@@ -23,6 +24,7 @@ public static class CpqModule
 
         services.AddHealthChecks().AddCheck<CpqHealthCheck>("cpq");
         services.AddHostedService<OutboxRelay<CpqDbContext>>();
+        services.AddHostedService<CustomerCreatedConsumer>();
 
         HelmModuleRegistry.Register("Cpq", "cpq");
 

@@ -1,0 +1,9 @@
+{
+  "name": "demo-slice-tests",
+  "projectType": "library",
+  "sourceRoot": "libs/api/Helm.DemoSlice.Tests",
+  "targets": {
+    "test": { "executor": "nx:run-commands", "options": { "command": "dotnet test libs/api/Helm.DemoSlice.Tests/Helm.DemoSlice.Tests.csproj" } }
+  },
+  "implicitDependencies": ["crm", "crm-contracts", "cpq", "cpq-contracts", "api"]
+}

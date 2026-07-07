@@ -1,5 +1,6 @@
 using Helm.Core.MultiCompany;
 using Helm.Core.Outbox;
+using Helm.Cpq.Domain;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -15,7 +16,14 @@ public class CpqDbContext(
     {
         b.HasDefaultSchema("cpq");
 
-        // No entities yet — add this module's aggregates here (see Domain/README.md).
+        b.Entity<CustomerRef>(e =>
+        {
+            e.ToTable("customer_ref");
+            e.HasKey(c => c.CustomerId);
+            e.Property(c => c.CustomerId).HasColumnName("customer_id");
+            e.Property(c => c.CompanyId).HasColumnName("company_id");
+            e.Property(c => c.Name).HasColumnName("name").IsRequired();
+        });
 
         OutboxModelBuilder.AddOutbox(b);
 

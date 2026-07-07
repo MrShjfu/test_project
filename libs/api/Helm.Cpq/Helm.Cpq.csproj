@@ -21,6 +21,9 @@
   <ItemGroup>
     <ProjectReference Include="..\Helm.Core\Helm.Core.csproj" />
     <ProjectReference Include="..\Helm.Cpq.Contracts\Helm.Cpq.Contracts.csproj" />
+    <!-- Legal per ADR-001/002: a module may depend on another module's Contracts (never its
+         implementation). Consumes Crm's CustomerCreated event and its shape only. -->
+    <ProjectReference Include="..\Helm.Crm.Contracts\Helm.Crm.Contracts.csproj" />
   </ItemGroup>
 
 </Project>
