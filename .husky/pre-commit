@@ -1,1 +1,5 @@
+#!/usr/bin/env sh
+# dotnet lives user-local; git hooks do not source ~/.bashrc
+export DOTNET_ROOT="$HOME/.dotnet"
+export PATH="$DOTNET_ROOT:$DOTNET_ROOT/tools:$PATH"
 npx lint-staged

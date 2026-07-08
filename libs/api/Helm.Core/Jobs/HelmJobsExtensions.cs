@@ -3,6 +3,7 @@ using Hangfire.PostgreSql;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Helm.Core.Jobs;
 
@@ -43,10 +44,25 @@ public static class HelmJobsExtensions
         // module registrations after this point require an app restart to be picked up by the
         // recurring job; this is an accepted limitation, not a bug.
         var schemas = HelmModuleRegistry.Modules.Select(m => m.Schema).ToList();
-        RecurringJob.AddOrUpdate<OutboxPurgeJob>(
-            "outbox-purge",
-            job => job.Run(schemas),
-            Cron.Daily);
+        try
+        {
+            RecurringJob.AddOrUpdate<OutboxPurgeJob>(
+                "outbox-purge",
+                job => job.Run(schemas),
+                Cron.Daily);
+        }
+        catch (Exception ex)
+        {
+            // Registration must never take the app down: AddOrUpdate is idempotent and every
+            // replica runs it at startup, so one instance succeeding is enough. Under autoscale
+            // (or after an unclean shutdown leaves a stale hangfire distributed-lock row),
+            // replicas can time out contending for 'hangfire:lock:recurring-job:outbox-purge' —
+            // crash-looping the whole app over a daily cleanup job would be a terrible trade.
+            app.Logger.LogWarning(ex,
+                "Recurring job 'outbox-purge' registration failed at startup; " +
+                "another instance likely holds the lock or a stale lock exists. " +
+                "Registration will be retried on next app start.");
+        }
 
         return app;
     }

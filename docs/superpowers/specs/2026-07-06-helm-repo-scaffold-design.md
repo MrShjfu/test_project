@@ -9,13 +9,13 @@
 
 Scaffold the Helm monorepo as a **walking skeleton**: every architectural rule in the ADRs exists as *running, tested code*, every one of the 10 domain modules exists as a standards-compliant skeleton, and exactly one thin demo slice (CRM → CPQ) proves the shared infrastructure end-to-end. This repo becomes the base Phase 1 (Doyle) modules are built on.
 
-**Success criteria:**
+**Success criteria:** *(all verified 2026-07-08, final sweep)*
 
-1. `docker compose up -d && nx serve api` gives a running API against local Postgres + RabbitMQ.
-2. The demo slice passes three integration tests (outbox end-to-end + idempotency, company isolation + admin audit, transaction rollback = no phantom event).
-3. `Helm.ArchTests` fails the build on any module-boundary violation, automatically covering all current and future modules (discovered by reflection over `Helm.*` assemblies).
-4. `nx g helm-module` generates a new compliant module with no manual wiring beyond what the generator does.
-5. CI (GitHub Actions) runs `nx affected -t lint,test,build` green, and fails if the generated API client differs from the committed one.
+1. ✅ `docker compose up -d && nx serve api` gives a running API against local Postgres + RabbitMQ. *(also full-container profile: /health 200, web 200)*
+2. ✅ The demo slice passes three integration tests (outbox end-to-end + idempotency, company isolation + admin audit, transaction rollback = no phantom event). *(4 tests, real RabbitMQ + Postgres)*
+3. ✅ `Helm.ArchTests` fails the build on any module-boundary violation, automatically covering all current and future modules. *(bite-check evidenced in Task 12; scratch module auto-discovered: 33→36 tests)*
+4. ✅ `nx g helm-module` generates a new compliant module with no manual wiring beyond what the generator does. *(scratch cycle: generate → build 0 errors → ArchTests green → clean revert)*
+5. ✅ CI runs `nx affected -t lint,test,build` green (parallel=1 pending CICD-07) and fails on api-client drift; coverage gate 60% on Helm.Core (baseline ~71.7%). *(GitHub Actions interim; ADO pipeline per docs/cicd supersedes on the Azure Repos move)*
 
 ## Decisions of this spec
 
