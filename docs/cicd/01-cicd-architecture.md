@@ -4,7 +4,7 @@
 
 **Azure DevOps end-to-end**: Azure Repos (code + PR), Azure Pipelines (CI/CD, YAML), Azure Boards (optional work-item links), Azure Artifacts/ACR (artifacts). Decided in the 2026-07-08 design session; the project starts fresh on Azure Repos. All CI logic lives in nx targets so the pipeline file (`azure-pipelines.yml`) stays a thin shell (ADR-009 discipline).
 
-Diagrams (pipeline flow + environment topology): [cicd-architecture.drawio](cicd-architecture.drawio).
+Diagrams: [diagrams/pipeline-flow.drawio](diagrams/pipeline-flow.drawio) · [diagrams/environments-monitoring.drawio](diagrams/environments-monitoring.drawio) · [diagrams/be-deploy-flow.drawio](diagrams/be-deploy-flow.drawio) · [diagrams/fe-deploy-flow.drawio](diagrams/fe-deploy-flow.drawio).
 
 Architecture Overview §10 listed Azure Pipelines as unapproved; this document is the approval record. Flag to the team that overview §10 should be updated to reference this folder.
 

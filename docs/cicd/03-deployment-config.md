@@ -39,6 +39,8 @@ Container: single image `acrhelm.azurecr.io/helm-host:<sha>`; port 8080; livenes
 
 ## Database migrations in the pipeline
 
+Flow diagram: [diagrams/database-config-flow.drawio](diagrams/database-config-flow.drawio).
+
 - Package stage builds **EF migration bundles** (one per module — 10 module schemas + core + hangfire owner schemas): `dotnet ef migrations bundle --project libs/api/Helm.<Mod> --startup-project apps/api/Helm.Host --context <Mod>DbContext --self-contained`.
 - Deploy stage runs bundles against the env database (pipeline step with the Key Vault-sourced connection string) **before** any traffic shift.
 - Contract (ADR-002, non-negotiable): backward-compatible only — add nullable → backfill → enforce; never drop a column while any live revision uses it. The 24h-old Prod revision must always be able to run against the migrated schema.
@@ -53,7 +55,7 @@ Container: single image `acrhelm.azurecr.io/helm-host:<sha>`; port 8080; livenes
 
 ## Static Web Apps deployment
 
-- 3 apps (internal / portal / kiosk), each: build via `pnpm nx build <app>` per environment (build-time `VITE_API_BASE`/App Insights key; FE builds are per-env by design — see drawio page "FE Deploy Flow"), deploy via the SWA pipeline task with deployment token from Key Vault (or SWA deployment-token-less OIDC when available).
+- 3 apps (internal / portal / kiosk), each: build via `pnpm nx build <app>` per environment (build-time `VITE_API_BASE`/App Insights key; FE builds are per-env by design — see [diagrams/fe-deploy-flow.drawio](diagrams/fe-deploy-flow.drawio)), deploy via the SWA pipeline task with deployment token from Key Vault (or SWA deployment-token-less OIDC when available).
 - Prod uses SWA **staging environment → swap**; Dev/SIT deploy direct.
 - PR previews: SWA named preview environments created by the PR pipeline, pointed at the `pr-<id>` API base URL via build-time env (`VITE_API_BASE`).
 - SPA fallback + API base URL are build-time config; no secrets in FE bundles, ever.

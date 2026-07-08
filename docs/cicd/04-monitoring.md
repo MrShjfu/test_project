@@ -1,6 +1,6 @@
 # 04 — Monitoring & Alerting
 
-Diagram: environment/topology view including the monitoring plane is in [cicd-architecture.drawio](cicd-architecture.drawio) (page "Environments & Monitoring").
+Diagram: environment/topology view including the monitoring plane: [diagrams/environments-monitoring.drawio](diagrams/environments-monitoring.drawio).
 
 ## Stack
 

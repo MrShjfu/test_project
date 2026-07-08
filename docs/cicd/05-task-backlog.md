@@ -60,4 +60,4 @@ Ordered, phased backlog to stand up the full DevOps system. Each task has prereq
 
 A (1→4) → B (5→10, parallelizable) → C (11/12 → 13/14/15 in parallel → 16..20 → 22) → D → E. Critical path to "Doyle can deploy": A → B5 → C11,12,14,20 → D23. CICD-13 (Service Bus transport) and CICD-19 (Entra) are the two long poles that can start early in parallel.
 
-Pipeline flow and environment topology diagrams: [cicd-architecture.drawio](cicd-architecture.drawio).
+Diagrams: [diagrams/pipeline-flow.drawio](diagrams/pipeline-flow.drawio) · [diagrams/environments-monitoring.drawio](diagrams/environments-monitoring.drawio) · [diagrams/be-deploy-flow.drawio](diagrams/be-deploy-flow.drawio) · [diagrams/fe-deploy-flow.drawio](diagrams/fe-deploy-flow.drawio) · [diagrams/database-config-flow.drawio](diagrams/database-config-flow.drawio).
