@@ -15,12 +15,13 @@ Ordered, phased backlog to stand up the full DevOps system. Each task has prereq
 
 | ID | Task | Pre | DoD | Effort |
 | --- | --- | --- | --- | --- |
-| CICD-05 | Author `azure-pipelines.yml` CI stage: checkout fetch-depth 0, Node 22 + .NET 10 setup, npm ci, `nx affected -t lint,test,build` with Pipeline Caching (npm + nx) | CICD-02 | PR build green end-to-end incl Testcontainers | M |
+| CICD-05 | Author `azure-pipelines.yml` CI stage: checkout fetch-depth 0, Node 22 + .NET 10 setup, corepack enable + `pnpm install --frozen-lockfile`, `pnpm nx affected -t lint,test,build` with Pipeline Caching (pnpm store + nx) | CICD-02, CICD-26 | PR build green end-to-end incl Testcontainers | M |
+| CICD-26 | Migrate workspace npm → **pnpm**: pnpm-lock.yaml, `packageManager` field (corepack), remove package-lock.json, update scripts/docs, verify nx + husky + Playwright still green | CICD-02 | `pnpm install --frozen-lockfile` + full `nx run-many` green | M |
 | CICD-06 | Port api-client drift gate (`tools/scripts/generate-api-client.sh` + `git diff --exit-code`) | CICD-05 | Intentional drift fails the PR | S |
 | CICD-07 | Fix the `nx affected --parallel` MSB3030 copy race (proper project.json dependsOn chains or `--parallel=1` for dotnet targets, documented) | CICD-05 | 3 consecutive clean parallel runs | M |
 | CICD-08 | Coverage gate: coverlet 60% line on `[Helm.Core]*` (already in Helm.Core.Tests.csproj from walking-skeleton Task 22 leftovers — verify + wire as pipeline step) | CICD-05 | Under-threshold build fails | S |
 | CICD-09 | SonarQube: stand up SonarCloud-or-server decision, ADO extension, PR gate | CICD-05 | Sonar status on PR, merge blocked on red | M |
-| CICD-10 | Renovate ADO extension with npm+NuGet presets, weekly schedule | CICD-02 | First Renovate PRs open | S |
+| CICD-10 | Renovate ADO extension with pnpm+NuGet presets, weekly schedule | CICD-02 | First Renovate PRs open | S |
 | — | Also: finish walking-skeleton Task 22 leftovers (husky/lint-staged local hooks — currently uncommitted in the repo) | — | Hooks fire on commit | S |
 
 ## Phase C — Environments & deploy (Dev → SIT)

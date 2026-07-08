@@ -22,12 +22,14 @@ Architecture Overview §10 listed Azure Pipelines as unapproved; this document i
 | DB migration | EF Core migration bundles, pipeline job before traffic shift | ADR-002 backward-compat contract |
 | Identity | Workload identity federation (OIDC) for the ADO→Azure service connection; Managed Identity + Key Vault at runtime | No long-lived secrets anywhere |
 | Monitoring | App Insights + Log Analytics + Azure Monitor alerts | See [04-monitoring.md](04-monitoring.md) |
-| Dependency updates | Renovate (ADO extension) | npm + NuGet, weekly schedule |
+| Dependency updates | Renovate (ADO extension) | JS (pnpm lockfile) + NuGet, weekly schedule |
+| FE package manager | **pnpm** (via corepack, `--frozen-lockfile` in CI) | Workspace migrates from npm — backlog CICD-26 |
 
 ## Branch & PR flow
 
 - `main` protected: PR required, ≥1 approval, build-validation = pipeline CI stage, optional work-item link. Squash merge.
-- Every merge to `main` is deployable; Prod promotion is by **approval**, not by branch. `release/*` branches remain an option for hotfix tracks (documented, not default).
+- **Deploy source = `main` only** (trunk-based). Package/DeployDev/DeploySIT/DeployProd stages trigger exclusively on `main`; Dev, SIT and Prod never receive a feature-branch build. Feature branches get CI plus a **PR ephemeral environment** (`pr-<id>`) — that is the sanctioned way to see a branch running. Rationale: one promotion line (same image digest Dev→SIT→Prod), no "who deployed what" drift, approvals mean something.
+- Hotfix: fix lands on `main` via PR like everything else and rides the same pipeline (fast path = same stages, nothing skipped). `release/*` branches remain a documented option if a long-lived support track ever becomes necessary — not used by default.
 
 ## Pipeline stages (`azure-pipelines.yml`)
 
@@ -45,7 +47,7 @@ DeployProd  (manual approval on ADO Environment "prod"):
                          (approval or clean-metrics gate between steps) · SWA slot swap
 ```
 
-Caching: Pipeline Caching for npm + nx cache. Agents: MS-hosted; revisit self-hosted only if queue time or Testcontainers pull-time hurts (decision point, not day-1).
+Caching: Pipeline Caching for the pnpm store + nx cache. Agents: MS-hosted; revisit self-hosted only if queue time or Testcontainers pull-time hurts (decision point, not day-1).
 
 **Known issue to fix during port:** `nx affected --parallel=3` produced an MSB3030 copy race between .NET projects sharing dependency outputs (seen in the walking-skeleton verification). Mitigate in the pipeline with `--parallel=1` for the .NET-heavy `test` target or per-project `dotnet build` locking; track a proper fix (e.g. `"dependsOn"` build chains in project.json) in the backlog (CICD-07).
 

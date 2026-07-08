@@ -53,7 +53,7 @@ Container: single image `acrhelm.azurecr.io/helm-host:<sha>`; port 8080; livenes
 
 ## Static Web Apps deployment
 
-- 3 apps (internal / portal / kiosk), each: build via `npx nx build <app>` in Package, deploy via the SWA pipeline task with deployment token from Key Vault (or SWA deployment-token-less OIDC when available).
+- 3 apps (internal / portal / kiosk), each: build via `pnpm nx build <app>` per environment (build-time `VITE_API_BASE`/App Insights key; FE builds are per-env by design — see drawio page "FE Deploy Flow"), deploy via the SWA pipeline task with deployment token from Key Vault (or SWA deployment-token-less OIDC when available).
 - Prod uses SWA **staging environment → swap**; Dev/SIT deploy direct.
 - PR previews: SWA named preview environments created by the PR pipeline, pointed at the `pr-<id>` API base URL via build-time env (`VITE_API_BASE`).
 - SPA fallback + API base URL are build-time config; no secrets in FE bundles, ever.
