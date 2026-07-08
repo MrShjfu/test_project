@@ -49,6 +49,14 @@ Ordered, phased backlog to stand up the full DevOps system. Each task has prereq
 | CICD-24 | Release notes automation (ADO work items → release annotation in App Insights) | CICD-23 | Deploy markers visible on dashboards | S |
 | CICD-25 | Availability test (Prod /health) + Teams action group wiring | CICD-15 | Test alert fires to Teams | S |
 
+## Phase D2 — Hardening options (from [07-tooling-alternatives.md](07-tooling-alternatives.md))
+
+| ID | Task | Pre | DoD | Effort |
+| --- | --- | --- | --- | --- |
+| CICD-27 | Azure App Configuration: non-secret config + feature flags (per-company rollout), .NET provider + labels per env, KV references | CICD-11 | Flag toggles at runtime without redeploy | M |
+| CICD-28 | Secret rotation: KV near-expiry event → rotation job (Postgres password first); document rotation runbook | CICD-15 | Rotation fires in Dev without downtime | M |
+| CICD-29 | Entra/MI auth for Postgres + Service Bus (drop connection-string secrets where supported) | CICD-13/14 | KV holds no PG/SB connection strings for app runtime | M |
+
 ## Phase E — PR ephemeral environments
 
 | ID | Task | Pre | DoD | Effort |
