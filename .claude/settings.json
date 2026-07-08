@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(xargs -I{} echo {})",
+      "WebSearch",
+      "WebFetch(domain:www.cloudamqp.com)",
+      "Bash(brew info *)",
+      "Bash(brew list *)",
+      "Read(//opt/homebrew/opt/**)",
+      "Read(//opt/homebrew/Cellar/dotnet/**)",
+      "Bash(brew upgrade *)",
+      "Bash(/opt/homebrew/opt/dotnet/bin/dotnet --version)",
+      "Bash(/opt/homebrew/opt/dotnet/bin/dotnet build *)",
+      "Bash(docker info *)"
+    ]
+  }
+}
