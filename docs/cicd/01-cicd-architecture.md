@@ -73,7 +73,7 @@ Bicep is the standing choice (already scaffolded in `infra/`, compiles clean). R
 - The expected NTG subscription restructure favors Bicep (redeploy) over Terraform (state surgery: `state mv`/re-import).
 - Pipeline fit: `what-if` output as the Prod approval artifact is native and cheap.
 - Known Bicep gap: Entra app registrations (3 FEs + BFF auth) — plan: Microsoft Graph Bicep extension spike, fallback idempotent `az ad` scripts in `tools/` (backlog CICD-21).
-- Revisit trigger: an organization-wide Terraform mandate or a need to manage non-Azure providers by IaC.
+- Revisit trigger: an organization-wide Terraform mandate or a need to manage non-Azure providers by IaC. **The full Terraform variant of this design (state backend, pipeline deltas, backlog deltas, switch cost) is documented in [06-terraform-option.md](06-terraform-option.md).**
 
 ## Azure Repos project setup (fresh start)
 
