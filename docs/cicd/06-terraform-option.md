@@ -1,12 +1,12 @@
 # 06 — Alternative Option: Terraform instead of Bicep
 
-**Status:** documented alternative. The standing decision is **Bicep** ([01 §IaC decision](01-cicd-architecture.md)). This doc answers "what would the same design look like on Terraform" so the team can compare concretely and switch later with a known cost. Everything outside the IaC layer (pipeline stages, blue-green, migration bundles, monitoring, environments) is **unchanged** — only the infra-provisioning steps swap.
+**Status:** documented alternative. The standing decision is **Bicep** ([01 §IaC decision](01-cicd-architecture.md)). This doc answers "what would the same design look like on Terraform" so the team can compare concretely and switch later at a known cost. Everything outside the IaC layer (pipeline stages, blue-green, migration bundles, monitoring, environments) is **unchanged** — only the infra-provisioning steps swap.
 
 ## Repo layout
 
 ```
 infra-tf/
-├── modules/                        # reusable, provider-agnostic building blocks
+├── modules/                        # reusable building blocks
 │   ├── container-app/              # ACA env + app (mirrors modules/container-apps.bicep)
 │   ├── postgres/                   # Flexible Server + db
 │   ├── servicebus/                 # namespace + helm-events topic
@@ -21,59 +21,59 @@ infra-tf/
 └── versions.tf                     # pinned terraform + provider versions
 ```
 
-- **Directory-per-env** thay vì workspaces: mỗi env một state, một backend key, một `tfvars` — dễ đọc, dễ RBAC, không lỡ tay `apply` nhầm workspace. `terraform.tfvars` per env đóng vai trò của `*.bicepparam` (SKU, replicas, HA, retention — đúng ma trận [02](02-environments.md)).
-- Providers: `azurerm` (chính), `azuread` (Entra app registrations — điểm Terraform **mạnh hơn** Bicep, thay thế spike Graph-Bicep của CICD-19/21), `azapi` (escape hatch cho tính năng ACA mới mà azurerm chưa kịp hỗ trợ).
+- **Directory-per-env** instead of workspaces: each env has its own state, backend key and `tfvars` — easier to read, easier to RBAC, and no accidental `apply` against the wrong workspace. `terraform.tfvars` per env plays the role of `*.bicepparam` (SKUs, replicas, HA, retention — same matrix as [02](02-environments.md)).
+- Providers: `azurerm` (primary), `azuread` (Entra app registrations — where Terraform is **stronger** than Bicep; replaces the Graph-Bicep spike in CICD-19/21), `azapi` (escape hatch for new ACA features `azurerm` hasn't caught up with).
 
-## State management (phần Bicep không có — chi phí chính của option này)
+## State management (the part Bicep doesn't have — the main cost of this option)
 
-| Việc | Cách làm |
+| Concern | Approach |
 | --- | --- |
-| Backend | Azure Storage account riêng (`rg-helm-tfstate` / `sthelmtfstate`), container `tfstate`, key `helm-<env>.tfstate` |
-| Locking | Blob lease (azurerm backend có sẵn) — chặn 2 apply song song |
-| Bảo mật state | State chứa secrets/connection strings dạng plaintext ⇒ RBAC tối thiểu (chỉ pipeline SP + break-glass), versioning + soft delete bật, không ai `terraform state pull` tùy tiện |
-| Khởi tạo | Bootstrap script một lần (chicken-and-egg: cái storage account đầu tiên tạo bằng `az` CLI hoặc Bicep mini) |
-| Restructure subscription | ⚠️ Điểm đau đã biết: resource ID trong state gắn subscription — chuyển subscription = `terraform state mv`/`import` hàng loạt hoặc re-provision. Đây là lý do chính Bicep đang được chọn (01 §IaC) |
+| Backend | Dedicated Azure Storage account (`rg-helm-tfstate` / `sthelmtfstate`), container `tfstate`, key `helm-<env>.tfstate` |
+| Locking | Blob lease (built into the azurerm backend) — blocks concurrent applies |
+| State security | State contains secrets/connection strings in plaintext ⇒ minimal RBAC (pipeline SP + break-glass only), versioning + soft delete enabled, no casual `terraform state pull` |
+| Bootstrap | One-time script (chicken-and-egg: the first storage account is created with the `az` CLI or a mini Bicep file) |
+| Subscription restructure | ⚠️ Known pain point: resource IDs in state are bound to the subscription — moving subscriptions means mass `terraform state mv`/`import` or re-provisioning. This is the main reason Bicep is the standing choice (01 §IaC) |
 
-## Pipeline thay đổi thế nào
+## What changes in the pipeline
 
-Các stage giữ nguyên khung (CI → Package → Dev → IntTests → SIT → approval → Prod); phần IaC trong mỗi deploy stage đổi từ `what-if → apply` sang:
+The stage skeleton stays the same (CI → Package → Dev → IntTests → SIT → approval → Prod); the IaC portion of each deploy stage changes from `what-if → apply` to:
 
 ```
 DeployX (per env):
-  terraform -chdir=infra-tf/envs/<env> init      # backend config từ pipeline vars
-  terraform validate + fmt -check (+ tflint)      # ở CI stage
-  terraform plan -out=tfplan                      # plan file publish làm ARTIFACT
-  [Prod] plan artifact đính vào approval gate     # thay cho what-if diff — plan của TF đọc dễ hơn what-if
-  terraform apply tfplan                          # apply đúng plan đã duyệt (không plan lại)
+  terraform -chdir=infra-tf/envs/<env> init      # backend config from pipeline vars
+  terraform validate + fmt -check (+ tflint)      # in the CI stage
+  terraform plan -out=tfplan                      # plan file published as an ARTIFACT
+  [Prod] plan artifact attached to approval gate  # replaces the what-if diff — TF plans read better
+  terraform apply tfplan                          # apply exactly the approved plan (no re-plan)
 ```
 
-- **Plan-then-apply-the-plan** là lợi thế thật của Terraform trong pipeline: Prod approver duyệt chính xác `tfplan` sẽ được apply, không có khoảng hở "diff lúc duyệt ≠ diff lúc apply" (what-if của Bicep có khoảng hở này về lý thuyết).
-- Drift check (CICD-22): scheduled `terraform plan -detailed-exitcode` — exit 2 = drift → alert. Chuẩn hơn what-if (ít noise).
-- Task ADO: dùng `TerraformTaskV4`/CLI thuần qua `AzureCLI@2` (khuyến nghị CLI thuần — ít phụ thuộc extension marketplace).
-- Service connection OIDC giữ nguyên (azurerm hỗ trợ workload identity federation qua `use_oidc = true`).
+- **Plan-then-apply-the-plan** is Terraform's real advantage in a pipeline: the Prod approver reviews exactly the `tfplan` that will be applied — there is no "diff at approval time ≠ diff at apply time" gap (Bicep's what-if has that gap in theory).
+- Drift check (CICD-22): scheduled `terraform plan -detailed-exitcode` — exit code 2 = drift → alert. Cleaner than what-if (less noise).
+- ADO tasks: `TerraformTaskV4` or plain CLI via `AzureCLI@2` (plain CLI recommended — fewer marketplace-extension dependencies).
+- OIDC service connections stay unchanged (`azurerm` supports workload identity federation via `use_oidc = true`).
 
-## Backlog delta (nếu chọn Terraform, các task đổi như sau)
+## Backlog delta (if Terraform is chosen, these tasks change)
 
-| Task | Bicep (hiện tại) | Terraform (option này) |
+| Task | Bicep (current) | Terraform (this option) |
 | --- | --- | --- |
-| CICD-11 | `infra/params/*.bicepparam` + mở rộng modules | Viết `infra-tf/` modules + `envs/*/tfvars` (port từ Bicep skeleton — effort L thay vì M) |
-| CICD-11b (mới) | — | Bootstrap state backend + RBAC + versioning (S) |
-| CICD-15 | monitoring.bicep | module `monitoring/` (tương đương) |
-| CICD-19/21 | Graph Bicep spike, fallback `az ad` scripts | **Bỏ spike** — dùng provider `azuread` chính thống (điểm cộng lớn nhất của option) |
-| CICD-20/23 | what-if artifact ở approval | `tfplan` artifact ở approval (tốt hơn) |
-| CICD-22 | what-if drift check | `plan -detailed-exitcode` (tốt hơn) |
-| infra/ hiện có | giữ | archive sau khi port xong (không chạy song song 2 IaC trên cùng RG — cấm tuyệt đối) |
+| CICD-11 | `infra/params/*.bicepparam` + extend modules | Author `infra-tf/` modules + `envs/*/tfvars` (port from the Bicep skeleton — effort L instead of M) |
+| CICD-11b (new) | — | Bootstrap state backend + RBAC + versioning (S) |
+| CICD-15 | monitoring.bicep | `monitoring/` module (equivalent) |
+| CICD-19/21 | Graph-Bicep spike, fallback `az ad` scripts | **Spike removed** — first-class `azuread` provider (the biggest win of this option) |
+| CICD-20/23 | what-if artifact at approval | `tfplan` artifact at approval (better) |
+| CICD-22 | what-if drift check | `plan -detailed-exitcode` (better) |
+| existing `infra/` | keep | archive after the port completes (never run two IaC tools against the same resource group — hard rule) |
 
-## Khi nào nên chuyển sang option này
+## When to switch to this option
 
-Kích hoạt lại quyết định nếu ≥1 điều sau thành sự thật:
+Reopen the decision if at least one of these becomes true:
 
-1. NTG/Scopic chuẩn hóa Terraform toàn tổ chức (kỹ năng + module registry có sẵn).
-2. Cần IaC quản lý provider ngoài Azure (Datadog, Cloudflare, GitHub org…, hoặc Entra ở quy mô lớn).
-3. Nhu cầu drift-detection/plan-review nghiêm ngặt trở thành yêu cầu compliance (plan-then-apply-the-plan + detailed-exitcode thắng what-if).
+1. NTG/Scopic standardizes on Terraform organization-wide (skills + module registry available).
+2. IaC needs to manage non-Azure providers (Datadog, Cloudflare, a Git host org, or Entra at scale).
+3. Strict drift-detection / plan-review becomes a compliance requirement (plan-then-apply-the-plan + detailed-exitcode beats what-if).
 
-Ngược lại, nếu subscription restructure diễn ra trước khi chuyển — ở lại Bicep qua đợt đó rồi hẵng cân nhắc (tránh state surgery).
+Conversely: if the subscription restructure happens first, stay on Bicep through it and reconsider afterwards (avoids state surgery).
 
-## Chi phí chuyển đổi (ước lượng)
+## Switching cost (estimate)
 
-Port 6 module Bicep hiện có (~500 dòng, đã compile sạch) sang HCL + state bootstrap + pipeline đổi task: **~3–5 ngày** một kỹ sư, cộng learning curve nếu team chưa quen HCL. Không có downtime (port là provision-layer, không đụng app), nhưng cần một lần `terraform import` nếu port sau khi hạ tầng thật đã tồn tại (thêm ~1–2 ngày cho import + reconcile).
+Porting the 6 existing Bicep modules (~500 lines, compiling clean) to HCL + state bootstrap + pipeline task changes: **~3–5 engineer-days**, plus the HCL learning curve if the team hasn't used it. No downtime (the port is provisioning-layer only), but if the switch happens after real infrastructure exists, add ~1–2 days for `terraform import` + state reconciliation.
