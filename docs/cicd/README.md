@@ -11,7 +11,7 @@
 | [04-monitoring.md](04-monitoring.md) | Observability stack: Application Insights, Log Analytics, alert catalog, dashboards, availability tests |
 | [05-task-backlog.md](05-task-backlog.md) | **The work backlog** — phased, ordered tasks with prerequisites and done-criteria to stand the whole system up |
 | [06-terraform-option.md](06-terraform-option.md) | Alternative: the same design on Terraform — state backend, pipeline deltas, backlog deltas, switch triggers & cost |
-| [cicd-architecture.drawio](cicd-architecture.drawio) | Diagrams (draw.io / diagrams.net): 1 Pipeline Flow · 2 Environments & Monitoring · 3 BE Deploy Flow (Dev/SIT/Prod) · 4 FE Deploy Flow (pnpm) |
+| [cicd-architecture.drawio](cicd-architecture.drawio) | Diagrams (draw.io / diagrams.net): 1 Pipeline Flow · 2 Environments & Monitoring · 3 BE Deploy Flow (Dev/SIT/Prod) · 4 FE Deploy Flow (pnpm) · 5 Database & Config Flow |
 
 Related repo assets that already exist (walking-skeleton phase):
 
