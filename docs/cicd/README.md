@@ -11,7 +11,7 @@
 | [04-monitoring.md](04-monitoring.md) | Observability stack: Application Insights, Log Analytics, alert catalog, dashboards, availability tests |
 | [05-task-backlog.md](05-task-backlog.md) | **The work backlog** — phased, ordered tasks with prerequisites and done-criteria to stand the whole system up |
 | [06-terraform-option.md](06-terraform-option.md) | Alternative: the same design on Terraform — state backend, pipeline deltas, backlog deltas, switch triggers & cost |
-| [diagrams/](diagrams/) | draw.io diagrams (one file per flow): [pipeline-flow](diagrams/pipeline-flow.drawio) · [environments-monitoring](diagrams/environments-monitoring.drawio) · [be-deploy-flow](diagrams/be-deploy-flow.drawio) · [fe-deploy-flow](diagrams/fe-deploy-flow.drawio) · [database-config-flow](diagrams/database-config-flow.drawio) |
+| [diagrams/](diagrams/) | draw.io diagrams (one file per flow): [pipeline-flow](diagrams/pipeline-flow.drawio) · [environments-monitoring](diagrams/environments-monitoring.drawio) · [be-deploy-flow](diagrams/be-deploy-flow.drawio) · [fe-deploy-flow](diagrams/fe-deploy-flow.drawio) · [database-config-flow](diagrams/database-config-flow.drawio) · [module-map](diagrams/module-map.drawio) |
 
 Related repo assets that already exist (walking-skeleton phase):
 
