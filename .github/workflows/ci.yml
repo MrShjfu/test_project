@@ -1,0 +1,48 @@
+name: ci
+on:
+  pull_request:
+  push: { branches: [main] }
+jobs:
+  affected:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - uses: actions/setup-dotnet@v4
+        with: { dotnet-version: 10.0.x }
+      - run: npm ci
+      - uses: nrwl/nx-set-shas@v4
+      # Playwright browsers only matter if web-internal-e2e is in the affected
+      # set; nx affected -t lint,test,build never runs its `e2e` target (it has
+      # no `test`/`build` target), but installing chromium here is cheap
+      # insurance for when the e2e target is wired into this pipeline later.
+      - name: Check if e2e project is affected
+        id: e2e-check
+        run: |
+          if npx nx show projects --affected --json | grep -q '"web-internal-e2e"'; then
+            echo "affected=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "affected=false" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Install Playwright browsers (chromium)
+        if: steps.e2e-check.outputs.affected == 'true'
+        run: npx playwright install --with-deps chromium
+      - run: npx nx affected -t lint,test,build --parallel=1  # parallel=1: dotnet MSB3030 copy race with parallel builds — proper fix tracked as CICD-07 in docs/cicd/05-task-backlog.md
+      # Coverage gate — Helm.Core only (spec: 60% line coverage). Empty module
+      # skeletons are exempt by scoping the gate to Helm.Core; measured local
+      # baseline is ~71.7% line coverage, so 60% is a real (non-aspirational) gate.
+      - run: dotnet test libs/api/Helm.Core.Tests /p:CollectCoverage=true /p:Threshold=60 /p:ThresholdType=line /p:Include="[Helm.Core]*"
+      # SonarCloud: not wired yet — needs org onboarding (spec: out of scope)
+  api-client-drift:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - uses: actions/setup-dotnet@v4
+        with: { dotnet-version: 10.0.x }
+      - run: npm ci
+      - run: bash tools/scripts/generate-api-client.sh
+      - run: git diff --exit-code libs/web/api-client/src

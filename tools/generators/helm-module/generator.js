@@ -93,7 +93,7 @@ async function helmModuleGenerator(tree, options) {
                     cwd: root,
                 });
             }
-            catch (e) {
+            catch {
                 devkit_1.logger.warn(`dotnet sln add failed for ${p.sln} — add it manually: dotnet sln Helm.sln add ${p.sln}`);
             }
         }

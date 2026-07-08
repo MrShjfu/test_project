@@ -10,6 +10,8 @@ export default [
       '**/out-tsc',
       '**/vitest.config.*.timestamp*',
       '**/vite.config.*.timestamp*',
+      // Compiled output of generator.ts (npm run build:generators) — lint the source, not the emit
+      'tools/generators/helm-module/generator.js',
     ],
   },
   {

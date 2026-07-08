@@ -20,6 +20,7 @@ coverage/
 TestResults/
 playwright-report/
 test-results/
+coverage.json
 
 vitest.config.*.timestamp*
 vite.config.*.timestamp*

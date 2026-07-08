@@ -19,20 +19,31 @@ const HOST_CSPROJ = 'apps/api/Helm.Host/Helm.Host.csproj';
 const SERVICES_MARKER = '// <helm-modules-services>';
 const ENDPOINTS_MARKER = '// <helm-modules-endpoints>';
 
-export default async function helmModuleGenerator(tree: Tree, options: HelmModuleSchema) {
+export default async function helmModuleGenerator(
+  tree: Tree,
+  options: HelmModuleSchema,
+) {
   const name = names(options.name).className; // PascalCase
   const schema = options.schema.toLowerCase();
 
   const projects = [
     { impl: `Helm.${name}`, sln: `libs/api/Helm.${name}/Helm.${name}.csproj` },
-    { impl: `Helm.${name}.Contracts`, sln: `libs/api/Helm.${name}.Contracts/Helm.${name}.Contracts.csproj` },
-    { impl: `Helm.${name}.Tests`, sln: `libs/api/Helm.${name}.Tests/Helm.${name}.Tests.csproj` },
+    {
+      impl: `Helm.${name}.Contracts`,
+      sln: `libs/api/Helm.${name}.Contracts/Helm.${name}.Contracts.csproj`,
+    },
+    {
+      impl: `Helm.${name}.Tests`,
+      sln: `libs/api/Helm.${name}.Tests/Helm.${name}.Tests.csproj`,
+    },
   ];
 
   // Refuse to clobber an existing module.
   for (const p of projects) {
     if (tree.exists(`libs/api/${p.impl}`)) {
-      throw new Error(`libs/api/${p.impl} already exists — refusing to overwrite. Delete it first.`);
+      throw new Error(
+        `libs/api/${p.impl} already exists — refusing to overwrite. Delete it first.`,
+      );
     }
   }
 
@@ -84,17 +95,24 @@ export default async function helmModuleGenerator(tree: Tree, options: HelmModul
     const root = tree.root;
     for (const p of projects) {
       try {
-        execSync(`dotnet sln "${joinPathFragments(root, 'Helm.sln')}" add "${joinPathFragments(root, p.sln)}"`, {
-          stdio: 'inherit',
-          cwd: root,
-        });
-      } catch (e) {
-        logger.warn(`dotnet sln add failed for ${p.sln} — add it manually: dotnet sln Helm.sln add ${p.sln}`);
+        execSync(
+          `dotnet sln "${joinPathFragments(root, 'Helm.sln')}" add "${joinPathFragments(root, p.sln)}"`,
+          {
+            stdio: 'inherit',
+            cwd: root,
+          },
+        );
+      } catch {
+        logger.warn(
+          `dotnet sln add failed for ${p.sln} — add it manually: dotnet sln Helm.sln add ${p.sln}`,
+        );
       }
     }
 
     logger.info('');
-    logger.info(`Helm.${name} scaffolded. Next step — create its initial EF migration:`);
+    logger.info(
+      `Helm.${name} scaffolded. Next step — create its initial EF migration:`,
+    );
     logger.info('');
     logger.info(
       `  dotnet ef migrations add Init${name} \\\n` +
@@ -115,7 +133,10 @@ function stripTemplateSuffix(tree: Tree) {
         walk(full);
       } else if (full.endsWith('.template')) {
         const content = tree.read(full);
-        tree.write(full.slice(0, -'.template'.length), content ?? Buffer.from(''));
+        tree.write(
+          full.slice(0, -'.template'.length),
+          content ?? Buffer.from(''),
+        );
         tree.delete(full);
       }
     }
@@ -144,14 +165,21 @@ function addHostProjectReference(tree: Tree, name: string) {
   const ref = `<ProjectReference Include="..\\..\\..\\libs\\api\\Helm.${name}\\Helm.${name}.csproj" />`;
   if (content.includes(`Helm.${name}\\Helm.${name}.csproj`)) return; // idempotent
   const anchor = `<ProjectReference Include="..\\..\\..\\libs\\api\\Helm.Crm\\Helm.Crm.csproj" />`;
-  if (!content.includes(anchor)) throw new Error(`Anchor project reference not found in ${HOST_CSPROJ}`);
+  if (!content.includes(anchor))
+    throw new Error(`Anchor project reference not found in ${HOST_CSPROJ}`);
   tree.write(HOST_CSPROJ, content.replace(anchor, `${anchor}\n    ${ref}`));
 }
 
-function insertBeforeMarker(tree: Tree, file: string, marker: string, line: string) {
+function insertBeforeMarker(
+  tree: Tree,
+  file: string,
+  marker: string,
+  line: string,
+) {
   const content = tree.read(file, 'utf-8');
   if (content === null) throw new Error(`${file} not found`);
-  if (!content.includes(marker)) throw new Error(`Marker '${marker}' not found in ${file}`);
+  if (!content.includes(marker))
+    throw new Error(`Marker '${marker}' not found in ${file}`);
   if (content.includes(line)) return; // idempotent
   const updated = content.replace(marker, `${line}\n${marker}`);
   tree.write(file, updated);
